@@ -7,11 +7,13 @@ import sys
 from pathlib import Path
 
 if getattr(sys, 'frozen', False):
-    _base = Path(sys._MEIPASS)
+    _meipass = Path(sys._MEIPASS)
+    _exe_dir = Path(sys.executable).parent
     _extra = [
-        str(_base),
-        str(_base / "onnxruntime" / "capi"),
-        str(_base / "numpy.libs"),
+        str(_exe_dir),
+        str(_meipass),
+        str(_meipass / "onnxruntime" / "capi"),
+        str(_meipass / "numpy.libs"),
     ]
     existing = os.environ.get("PATH", "")
     new_paths = ";".join(d for d in _extra if Path(d).is_dir())

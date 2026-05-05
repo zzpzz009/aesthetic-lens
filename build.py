@@ -34,9 +34,10 @@ def build():
         "--name=AestheticLens",
         "--noconfirm",
         "--noconsole",
-        "--windowed",
         # 收集 frontend 目录
         f"--add-data=frontend;frontend",
+        # runtime hook — DLL 路径修复
+        "--runtime-hook=rthook_ort.py",
         # 隐式导入
         "--hidden-import=backend",
         "--hidden-import=backend.scorer",
@@ -45,12 +46,16 @@ def build():
         "--hidden-import=onnxruntime",
         "--hidden-import=PIL",
         "--hidden-import=numpy",
+        "--hidden-import=cryptography",
+        "--hidden-import=cryptography.hazmat.primitives.ciphers",
+        "--hidden-import=cryptography.hazmat.primitives.padding",
+        "--hidden-import=cryptography.hazmat.backends",
         # 排除不需要的大模块
         "--exclude-module=torch",
         "--exclude-module=open_clip",
         "--exclude-module=tensorflow",
         "--exclude-module=matplotlib",
-        # 排除 CUDA/TensorRT providers（我们用 CPU）
+        # 排除 CUDA/TensorRT providers（打包版只走 CPU）
         "--exclude-module=onnxruntime_providers_cuda",
         "--exclude-module=onnxruntime_providers_tensorrt",
         # 入口

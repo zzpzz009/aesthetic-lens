@@ -9,3 +9,5 @@ models/*.onnx
 models/*.onnx.enc
 frontend/preview-score/
 frontend/preview-v3/
+wheels/
+.build-venv/

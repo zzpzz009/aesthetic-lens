@@ -56,24 +56,39 @@ class AestheticScorer:
             return str(exe_dir / "models")
         return str(Path(__file__).parent.parent / "models")
 
+    def _get_providers(self):
+        """检测可用的 ORT providers，CUDA 优先，CPU 兜底"""
+        import onnxruntime as ort
+        available = ort.get_available_providers()
+        preferred = ["CUDAExecutionProvider", "CPUExecutionProvider"]
+        providers = [p for p in preferred if p in available]
+        if not providers:
+            providers = ["CPUExecutionProvider"]
+        return providers
+
     def _load_models(self):
         """解密并加载 ONNX 模型到内存"""
-        # PyInstaller 6.x 的 pyimod03_ctypes 拦截了 ctypes.CDLL/WinDLL
-        # 使用 ctypes 内部 API 绕过
         if getattr(sys, 'frozen', False):
             import ctypes
             base = sys._MEIPASS
+            exe_dir = str(Path(sys.executable).parent)
             ort_capi = os.path.join(base, "onnxruntime", "capi")
             ort_dll = os.path.join(ort_capi, "onnxruntime.dll")
+            # 也检查 exe 同级目录
+            if not os.path.exists(ort_dll):
+                ort_dll = os.path.join(exe_dir, "onnxruntime.dll")
             if os.path.exists(ort_dll):
-                # 用 ctypes._CFuncPtr 直接调用 LoadLibraryW
                 kernel32 = ctypes.windll.kernel32
                 kernel32.LoadLibraryW.argtypes = [ctypes.c_wchar_p]
                 kernel32.LoadLibraryW.restype = ctypes.c_void_p
-                h = kernel32.LoadLibraryW(ort_dll)
-                if h:
-                    pass  # 成功预加载
-                # else: 预加载失败，继续尝试正常导入
+                kernel32.LoadLibraryW(ort_dll)
+            # 确保 DLL 搜索路径
+            for d in [exe_dir, ort_capi, os.path.join(base, "numpy.libs")]:
+                if d and os.path.isdir(d):
+                    try:
+                        os.add_dll_directory(d)
+                    except OSError:
+                        pass
 
         import onnxruntime as ort
 
@@ -100,16 +115,18 @@ class AestheticScorer:
         sess_opts = ort.SessionOptions()
         sess_opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
 
-        # CLIP FP32: CUDA 优先, CPU 回退
+        providers = self._get_providers()
+
+        # CLIP FP32
         self._clip_sess = ort.InferenceSession(
             clip_bytes, sess_opts,
-            providers=["CUDAExecutionProvider", "CPUExecutionProvider"]
+            providers=providers
         )
 
-        # MLP FP32: 用 CUDA 或 CPU (模型小, CPU 也快)
+        # MLP FP32
         self._mlp_sess = ort.InferenceSession(
             mlp_bytes, sess_opts,
-            providers=["CUDAExecutionProvider", "CPUExecutionProvider"]
+            providers=providers
         )
 
         elapsed = time.time() - t0

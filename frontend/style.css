@@ -19,11 +19,11 @@
   --text3:          #3D3A35;
   --accent:         #D4A96A;
   --accent-dim:     rgba(212, 169, 106, 0.10);
-  --tier-exceptional: #D4A96A;
-  --tier-excellent:   #6DB89E;
-  --tier-good:        #6A8EAE;
-  --tier-average:     #8A8070;
-  --tier-poor:        #C45450;
+  --tier-exceptional: #FF8C00;   /* 传说 Legendary — 橙金 */
+  --tier-excellent:   #A335EE;   /* 史诗 Epic — 紫 */
+  --tier-good:        #0070DD;   /* 稀有 Rare — 蓝 */
+  --tier-average:     #9D9D9D;   /* 普通 Common — 灰白 */
+  --tier-poor:        #8E2A2A;   /* 堕落 Corrupted — 暗红 */
 }
 
 html, body {
