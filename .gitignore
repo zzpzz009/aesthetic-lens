@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+build/
+dist/
+*.spec
+models/*.pth
+models/*.onnx
+models/*.onnx.enc
+frontend/preview-score/
+frontend/preview-v3/

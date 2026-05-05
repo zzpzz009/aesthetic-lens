@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AestheticLens</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 标题栏 -->
+  <header id="titlebar">
+    <div class="tb-brand">
+      <span class="tb-dot"></span>
+      <span class="tb-name">AestheticLens</span>
+    </div>
+    <div class="titlebar-drag pywebview-drag-region"></div>
+    <div class="titlebar-controls">
+      <button class="tb-btn" onclick="showAbout()" title="关于">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <circle cx="5" cy="5" r="3.5" stroke="currentColor" stroke-width="0.8"/>
+          <line x1="5" y1="4.5" x2="5" y2="7" stroke="currentColor" stroke-width="0.8" stroke-linecap="round"/>
+          <circle cx="5" cy="3.2" r="0.4" fill="currentColor"/>
+        </svg>
+      </button>
+      <button class="tb-btn" onclick="minimizeWindow()" title="最小化">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="1.2"/></svg>
+      </button>
+      <button class="tb-btn" onclick="toggleMaximize()" title="最大化">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1" y="1" width="8" height="8" stroke="currentColor" stroke-width="1"/></svg>
+      </button>
+      <button class="tb-btn tb-close" onclick="closeWindow()" title="关闭">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><line x1="1" y1="1" x2="9" y2="9" stroke="currentColor" stroke-width="1.2"/><line x1="9" y1="1" x2="1" y2="9" stroke="currentColor" stroke-width="1.2"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="content">
+
+    <!-- 空白拖拽区 -->
+    <div id="drop-zone">
+      <div class="drop-zone-inner">
+        <div class="drop-icon">
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+            <rect x="4" y="10" width="44" height="32" rx="3" stroke="currentColor" stroke-width="1.2"/>
+            <circle cx="17" cy="22" r="4" stroke="currentColor" stroke-width="1"/>
+            <path d="M4 36l12-9 7 6 10-8 15 12" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <p class="drop-text">拖入建筑效果图</p>
+        <p class="drop-sub">单张或多张均可 · 或点击选择</p>
+      </div>
+    </div>
+
+    <!-- 字幕卡 — 单图+批量翻页复用 -->
+    <div id="result-panel" style="display:none">
+      <div class="cinema-canvas">
+        <img id="result-image" src="" alt="评分图片">
+        <div id="loading-overlay" class="loading-overlay" style="display:none">
+          <div class="loading-spinner"></div>
+          <span class="loading-text">评分中</span>
+        </div>
+      </div>
+      <div class="credit-strip">
+        <div class="credit-score">
+          <span id="score-number" class="score-int">—</span>
+          <div class="score-scale">/ 10</div>
+        </div>
+        <div class="credit-meta">
+          <div id="score-tier" class="tier-badge" data-tier=""></div>
+          <div class="credit-details">
+            <span id="score-filename" class="credit-filename"></span>
+            <span id="score-elapsed" class="credit-elapsed"></span>
+          </div>
+          <div class="credit-bar-track">
+            <div id="score-bar-fill" class="credit-bar-fill"></div>
+          </div>
+        </div>
+        <div class="credit-actions">
+          <span id="nav-counter" class="nav-counter" style="display:none"></span>
+          <button class="btn-ghost" id="nav-prev" onclick="navSlide(-1)" style="display:none">←</button>
+          <button class="btn-ghost" id="nav-next" onclick="navSlide(1)" style="display:none">→</button>
+          <button class="btn-ghost" id="btn-back-batch" onclick="backToBatch()" style="display:none">返回</button>
+          <button class="btn-ghost" id="btn-back-drop" onclick="resetView()">返回</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 批量网格 -->
+    <div id="batch-view" class="batch-view" style="display:none">
+      <div class="batch-header">
+        <div id="batch-progress" class="batch-progress" style="display:none">
+          <div class="progress-track">
+            <div id="progress-bar-fill" class="progress-fill"></div>
+          </div>
+          <span id="progress-text" class="progress-text"></span>
+        </div>
+        <div class="batch-header-actions">
+          <button id="batch-export-btn" class="btn-ghost" onclick="exportBatch('csv')" style="display:none">导出</button>
+          <button class="btn-ghost" onclick="resetView()">返回</button>
+        </div>
+      </div>
+      <div id="batch-grid" class="batch-grid"></div>
+    </div>
+
+  </main>
+
+  <!-- 关于弹窗 -->
+  <div id="about-modal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeAbout()">
+    <div class="modal-card about-content">
+      <div class="modal-dot"></div>
+      <h3>AestheticLens</h3>
+      <p>建筑效果图美学评分工具</p>
+      <p class="modal-version">v1.0 · CLIP ViT-L-14</p>
+      <button class="btn-primary" onclick="closeAbout()">关闭</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

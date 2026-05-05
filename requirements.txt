@@ -1,0 +1,11 @@
+# AestheticLens — Build dependencies
+# PyInstaller 打包时需要这些
+onnxruntime==1.21.0
+pywebview==5.4
+Pillow>=10.0
+numpy>=1.24
+
+# 导出脚本额外依赖 (仅开发时需要)
+# torch>=2.0
+# open_clip_torch
+# onnx
