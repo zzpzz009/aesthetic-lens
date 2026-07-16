@@ -11,3 +11,26 @@ frontend/preview-score/
 frontend/preview-v3/
 wheels/
 .build-venv/
+
+# --- 构建产物 ---
+AestheticLens*.exe
+AestheticLens*.zip
+selftest_result.txt
+
+# --- 运行时日志/崩溃转储 ---
+app.log
+crash.log
+*.log
+
+# --- IDE / 调试 / 本地配置 ---
+.dbg/
+.trae/
+diag.py
+debug-*.md
+.env
+
+# --- 虚拟环境（多种命名兼容） ---
+venv-*/
+.venv/
+.env/
+wheels/
