@@ -4,9 +4,13 @@ __pycache__/
 build/
 dist/
 *.spec
+# --- 模型文件 ---
+# 评分头（MLP）体积小，入库随项目走
+# clip_visual.onnx.enc（~1.16GB）超过 GitHub 100MB 限制，单独走 Release 附件
+models/clip_visual.onnx.enc
 models/*.pth
 models/*.onnx
-models/*.onnx.enc
+# 仅忽略上述原始/中间文件；mlp_head_v4.530.onnx.enc 等加密模型显式入库
 frontend/preview-score/
 frontend/preview-v3/
 wheels/
