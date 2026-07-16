@@ -17,6 +17,7 @@
   --text:           #EDEBE6;
   --text2:          #7A756F;
   --text3:          #3D3A35;
+  --text4:          #55524d;
   --accent:         #D4A96A;
   --accent-dim:     rgba(212, 169, 106, 0.10);
   --tier-exceptional: #FF8C00;   /* 传说 Legendary — 橙金 */
@@ -71,6 +72,69 @@ html, body {
   font-weight: 500;
   color: var(--text3);
   letter-spacing: 0.06em;
+}
+
+/* 模型切换按钮 — 极隐蔽 */
+.tb-model-btn {
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text3);
+  cursor: pointer;
+  padding: 1px 8px;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  margin-left: 6px;
+}
+
+.tb-model-btn:hover {
+  color: var(--text2);
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+/* GPU 指示灯 — 极简圆点 + 微小文字 */
+#gpu-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 5px;
+  cursor: pointer;
+  user-select: none;
+}
+#gpu-indicator #gpu-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text4);
+  transition: background 0.3s, box-shadow 0.3s;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+#gpu-indicator #gpu-label {
+  font-size: 8px;
+  color: var(--text4);
+  letter-spacing: 0.05em;
+  transition: color 0.3s;
+  cursor: pointer;
+}
+#gpu-indicator.tb-gpu-on #gpu-dot {
+  background: #5a9e6f;
+  box-shadow: 0 0 4px rgba(90, 158, 111, 0.15);
+}
+#gpu-indicator.tb-gpu-on #gpu-label {
+  color: #5a9e6f;
+}
+#gpu-indicator.tb-gpu-off #gpu-dot {
+  background: var(--text4);
+}
+#gpu-indicator.tb-gpu-off #gpu-label {
+  color: var(--text4);
+}
+#gpu-indicator.disabled {
+  cursor: not-allowed;
+  opacity: 0.25;
 }
 
 .titlebar-drag {
@@ -200,6 +264,8 @@ html, body {
   max-height: 100%;
   object-fit: contain;
   display: block;
+  opacity: 1;
+  visibility: visible;
 }
 
 .loading-overlay {
@@ -324,6 +390,13 @@ html, body {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.04em;
   flex-shrink: 0;
+}
+
+.credit-model {
+  font-size: 9px;
+  color: var(--text3);
+  opacity: 0.5;
+  letter-spacing: 0.06em;
 }
 
 .credit-bar-track {
@@ -471,6 +544,21 @@ html, body {
   background: var(--border-subtle);
 }
 
+/* ---- 虚拟滚动模式 ---- */
+.batch-grid.virtual {
+  display: block;
+  position: relative;
+  contain: layout style;
+}
+
+.batch-grid .vg-spacer {
+  /* 仅撑开滚动高度 */
+}
+
+.batch-grid.virtual .batch-item {
+  position: absolute;
+}
+
 .batch-grid::-webkit-scrollbar {
   width: 4px;
 }
@@ -499,6 +587,44 @@ html, body {
   height: 100%;
   object-fit: cover;
   display: block;
+  opacity: 0;
+  transition: opacity 0.35s ease, filter 0.5s ease;
+}
+
+/* 未评分 — 黑白 */
+.batch-item-loading img {
+  filter: grayscale(1);
+}
+
+/* 评分完成 — 彩色 */
+.batch-item:not(.batch-item-loading) img {
+  filter: grayscale(0);
+}
+
+.batch-item img[src]:not([src=""]) {
+  opacity: 1;
+}
+
+/* ---- 骨架屏 shimmer ---- */
+.batch-item-loading::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.03) 40%,
+    rgba(255,255,255,0.06) 50%,
+    rgba(255,255,255,0.03) 60%,
+    transparent 100%
+  );
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .batch-item-score {
@@ -591,6 +717,113 @@ html, body {
 .credit-bar-fill[data-tier="较差"]  { background: var(--tier-poor); }
 
 /* ============================================================
+   评分筛选
+   ============================================================ */
+.batch-filter {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.filter-btn {
+  padding: 3px 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text3);
+  font-size: 11px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.filter-btn:hover {
+  color: var(--text2);
+  border-color: var(--border-subtle);
+}
+
+.filter-btn.filter-active {
+  color: var(--accent);
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+/* 等级色 — 激活态 */
+.filter-btn.filter-active[data-filter="卓越"] { color: var(--tier-exceptional); }
+.filter-btn.filter-active[data-filter="优秀"] { color: var(--tier-excellent); }
+.filter-btn.filter-active[data-filter="良好"] { color: var(--tier-good); }
+.filter-btn.filter-active[data-filter="一般"] { color: var(--tier-average); }
+.filter-btn.filter-active[data-filter="较差"] { color: var(--tier-poor); }
+
+.batch-item.filtered-out {
+  display: none;
+}
+
+.filter-sep {
+  width: 1px;
+  height: 16px;
+  background: var(--border-subtle);
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+
+.sort-btn {
+  padding: 3px 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text3);
+  font-size: 12px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.sort-btn:hover {
+  color: var(--text2);
+  border-color: var(--border-subtle);
+}
+
+.sort-btn.sort-btn-active {
+  color: var(--accent);
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.filter-label {
+  font-size: 11px;
+  color: var(--text3);
+  flex-shrink: 0;
+}
+
+.score-select {
+  padding: 3px 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text3);
+  font-size: 11px;
+  cursor: pointer;
+  outline: none;
+  letter-spacing: 0.02em;
+}
+
+.score-select:hover {
+  color: var(--text2);
+  border-color: var(--border-subtle);
+}
+
+.score-select:focus {
+  color: var(--accent);
+  border-color: var(--border);
+}
+
+.score-select option {
+  background: var(--surface-raised);
+  color: var(--text);
+}
+
+/* ============================================================
    兼容
    ============================================================ */
 #score-bar-fill {
@@ -658,4 +891,32 @@ html, body {
 @keyframes modalIn {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   空状态 & 键盘提示
+   ============================================================ */
+.batch-empty {
+  display: none;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  color: var(--text3);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.batch-empty.visible {
+  display: flex;
+}
+
+.nav-hint {
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 0.04em;
+  margin-right: 8px;
+  opacity: 0.5;
 }

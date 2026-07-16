@@ -13,6 +13,13 @@
     <div class="tb-brand">
       <span class="tb-dot"></span>
       <span class="tb-name">AestheticLens</span>
+      <button class="tb-model-btn" id="model-btn" onclick="cycleModel()" title="切换评分模型">
+        <span class="tb-model-label" id="model-label">V4.3</span>
+      </button>
+      <span id="gpu-indicator" onclick="toggleGPU()" title="GPU 加速（已开启）">
+        <span id="gpu-dot"></span>
+        <span id="gpu-label">GPU</span>
+      </span>
     </div>
     <div class="titlebar-drag pywebview-drag-region"></div>
     <div class="titlebar-controls">
@@ -71,6 +78,7 @@
           <div class="credit-details">
             <span id="score-filename" class="credit-filename"></span>
             <span id="score-elapsed" class="credit-elapsed"></span>
+            <span id="score-model" class="credit-model"></span>
           </div>
           <div class="credit-bar-track">
             <div id="score-bar-fill" class="credit-bar-fill"></div>
@@ -80,6 +88,7 @@
           <span id="nav-counter" class="nav-counter" style="display:none"></span>
           <button class="btn-ghost" id="nav-prev" onclick="navSlide(-1)" style="display:none">←</button>
           <button class="btn-ghost" id="nav-next" onclick="navSlide(1)" style="display:none">→</button>
+          <span class="nav-hint" id="nav-hint" style="display:none">← → 翻页 · Esc 返回</span>
           <button class="btn-ghost" id="btn-back-batch" onclick="backToBatch()" style="display:none">返回</button>
           <button class="btn-ghost" id="btn-back-drop" onclick="resetView()">返回</button>
         </div>
@@ -95,12 +104,36 @@
           </div>
           <span id="progress-text" class="progress-text"></span>
         </div>
+        <div id="batch-filter" class="batch-filter" style="display:none">
+          <button class="filter-btn filter-active" data-filter="all">全部</button>
+          <button class="filter-btn" data-filter="卓越">卓越</button>
+          <button class="filter-btn" data-filter="优秀">优秀</button>
+          <button class="filter-btn" data-filter="良好">良好</button>
+          <button class="filter-btn" data-filter="一般">一般</button>
+          <button class="filter-btn" data-filter="较差">较差</button>
+          <span class="filter-sep"></span>
+          <span class="filter-label">≥</span>
+          <select id="score-threshold" class="score-select">
+            <option value="0">不限</option>
+            <option value="9.0">9.0</option>
+            <option value="8.0">8.0</option>
+            <option value="7.0">7.0</option>
+            <option value="6.0">6.0</option>
+            <option value="5.0">5.0</option>
+            <option value="4.0">4.0</option>
+            <option value="3.0">3.0</option>
+          </select>
+          <span class="filter-sep"></span>
+          <button class="sort-btn" id="sort-btn" title="排序：点击切换">—</button>
+        </div>
         <div class="batch-header-actions">
           <button id="batch-export-btn" class="btn-ghost" onclick="exportBatch('csv')" style="display:none">导出</button>
+          <button id="batch-save-btn" class="btn-ghost" onclick="saveImagesToFolder()" style="display:none">另存</button>
           <button class="btn-ghost" onclick="resetView()">返回</button>
         </div>
       </div>
       <div id="batch-grid" class="batch-grid"></div>
+      <div id="batch-empty" class="batch-empty">没有匹配的图片</div>
     </div>
 
   </main>
@@ -111,11 +144,15 @@
       <div class="modal-dot"></div>
       <h3>AestheticLens</h3>
       <p>建筑效果图美学评分工具</p>
-      <p class="modal-version">v1.0 · CLIP ViT-L-14</p>
+      <p class="modal-version">v2.1 · CLIP ViT-L-14 · 多模型支持</p>
       <button class="btn-primary" onclick="closeAbout()">关闭</button>
     </div>
   </div>
 
+  <script src="batch-store.js"></script>
+  <script src="virtual-grid.js"></script>
+  <script src="batch-grid.js"></script>
+  <script src="filter.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

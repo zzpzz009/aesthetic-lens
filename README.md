@@ -1,6 +1,6 @@
-# AestheticLens v1.1.0
+# AestheticLens v2.0.0
 
-建筑效果图美学评分桌面工具。单文件 exe，双击即用，零配置。
+建筑效果图美学评分桌面工具。模型外置分发，双击即用，零配置。
 
 ## 功能
 
@@ -43,7 +43,7 @@
 ### 模型
 
 - **特征提取**: CLIP ViT-L-14 (open_clip, LAION-2B 预训练)
-- **评分头**: 微调 MLP 回归 (1072 张建筑效果图人工标注)
+- **评分头**: 微调 MLP 回归 (572 张多人评分平均，V3 模型 MAE=0.86)
 - **推理**: ONNX Runtime, CPUExecutionProvider
 - **模型文件**:
   - `clip_visual.onnx.enc` — 1160 MB (加密)
@@ -63,7 +63,7 @@ aesthetic-lens/
 │   ├── style.css       # 样式 (电影画报/暗色调)
 │   └── app.js          # 交互逻辑 (384行)
 ├── models/             # 加密模型 (git 排除)
-├── build.py            # PyInstaller --onefile 打包
+├── build.py            # PyInstaller --onedir 打包 (GPU, 详见 BUILD.md)
 ├── rthook_ort.py       # ORT DLL 运行时路径修复
 ├── model_export.py     # 模型 ONNX 导出 + 加密
 └── requirements.txt
@@ -71,16 +71,18 @@ aesthetic-lens/
 
 ### 打包
 
-- PyInstaller `--onefile --noconsole`
-- 纯 CPU 版 onnxruntime 1.19.2（排除 CUDA/TensorRT）
-- 产出: 单个 `AestheticLens.exe` (~2750 MB)
-- 首次启动 ~15-30s（解压模型到临时目录），后续启动有缓存更快
+- PyInstaller `--onedir --noconsole`，GPU 自适应（有 N 卡走 CUDA，无卡退 CPU）
+- 产出: `dist/AestheticLens/` 文件夹（约 4.5GB，含 exe + `_internal/` + `models/`）
+- **完整流程、避坑清单与验证步骤见 [BUILD.md](BUILD.md)**
+- 打包必须用 `venv-gpu` 环境（系统 Python 没有 nvidia CUDA 依赖）
 
 ## 分发
 
-复制 `dist/AestheticLens.exe` 到目标电脑，双击运行。
+将整个 `dist/AestheticLens/` 文件夹打成 zip 发给用户，或用 Inno Setup（`installer.iss`）编译为单个 `Setup.exe`。
 
-**系统要求**: Windows 10 21H2+ (自带 WebView2 Runtime)
+双击 `AestheticLens.exe` 运行。模型文件更新时只需替换 `models/` 下对应 .enc 文件，无需重新打包 exe。
+
+**系统要求**: Windows 10 21H2+ (自带 WebView2 Runtime)。GPU 加速需 NVIDIA 显卡 + 驱动，否则自动用 CPU。
 
 ## 开发
 
@@ -94,8 +96,8 @@ python model_export.py
 # 开发运行
 python app.py
 
-# 打包
-python build.py
+# 打包（必须用 venv-gpu，详见 BUILD.md）
+venv-gpu\Scripts\python.exe build.py
 ```
 
 ## 运行环境
@@ -106,6 +108,31 @@ python build.py
 - Pillow, numpy, cryptography
 
 ## CHANGELOG
+
+### v2.0.0 (2026-05-10) — V3 模型 + 模型外置
+
+**模型**
+- V3 MLP 评分头：基于 572 张多人评分平均数据（avg_manual）微调
+  - 训练：80 epochs, lr=2e-4, batch=64, cosine annealing, early stop patience=15
+  - 验证：572 张 476 训练 / 96 验证，8:2 随机划分
+  - V2 baseline MAE=1.8148 → V3 best MAE=0.8618 (epoch 42)，提升 52.5%
+  - 从 V2 best 权重继续微调（非预训练权重），保护已有学习
+- ONNX 导出 + AES-256 加密：PyTorch → ONNX diff=0.000000
+  - `mlp_head.onnx.enc` (3.5 MB) — V3 模型
+  - `clip_visual.onnx.enc` (1160 MB) — CLIP 不变
+
+**打包重构**
+- 模型外置：exe 从 2750MB 降到 69MB
+- `build.py` 去掉 `--add-data=models;models`
+- `AestheticLens.spec` datas 清空
+- `scorer.py` 已有 `_resolve_models_dir()` 优先 exe 同级 models/
+- 发行结构：`AestheticLens.exe` + `models/` 目录
+- 更新模型只需替换 .enc 文件，不用重新打包
+
+**评分维度设计**（面向未来）
+- 当前只有效果图维度，非效果图 → 0 分
+- 未来加总图维度时：全量数据补 type 标签 → 全量重训一次 → 之后新维度可继续微调
+- 推理时维度通过文本前缀指定（路线 B：一个模型多维度）
 
 ### v1.1.0 (2026-05-05) — 打包修复里程碑
 

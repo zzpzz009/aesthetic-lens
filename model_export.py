@@ -34,8 +34,8 @@ from backend.model_crypto import encrypt_file
 # ---------------------------------------------------------------------------
 CLIP_MODEL = "ViT-L-14"
 CLIP_PRETRAINED = "laion2b_s32b_b82k"
-CLIP_LOCAL_WEIGHT = "/mnt/c/tmp/clip_model/open_clip_pytorch_model.bin"
-MLP_WEIGHT = "/mnt/g/Agent/arch-ai-platform/image-library/aesthetic-scorer/finetuned/mlp_best_v2.pth"
+CLIP_LOCAL_WEIGHT = r"C:\tmp\clip_model\open_clip_pytorch_model.bin"
+MLP_WEIGHT = r"G:\Agent\arch-ai-platform\image-library\aesthetic-scorer\finetuned\mlp_best_v3.pth"
 MODELS_DIR = Path(__file__).parent / "models"
 
 
